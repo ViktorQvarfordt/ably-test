@@ -33,7 +33,6 @@ export function useChannel(
 
   useEffect(() => {
     channel.history({ limit: 1 }).then(async values => {
-      console.log(values.items)
       const data = values.items.length === 0 ? undefined : values.items[0].data
       setLastMessageData(data)
     })

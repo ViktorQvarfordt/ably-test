@@ -12,16 +12,15 @@ const usePresence = (channel: Ably.Types.RealtimeChannelPromise): [Ably.Types.Pr
   }, [channel.presence])
 
   useEffect(() => {
-    // Question: On enter this is called once for each present user. How to mitigate?
-    const handler = async (msg: Ably.Types.PresenceMessage) => {
-      const presenceMessages = await channel.presence.get()
-      console.log('Received presence update', msg)
-      setPresence(presenceMessages)
+    const handler = async () => {
+      setPresence(await channel.presence.get())
     }
 
-    channel.presence.subscribe(handler)
+    const actions: Ably.Types.PresenceAction[] = ['enter', 'leave', 'update']
 
-    return () => channel.presence.unsubscribe(handler)
+    channel.presence.subscribe(actions, handler)
+
+    return () => channel.presence.unsubscribe(actions, handler)
   }, [channel])
 
   return [presence, setLocalPresence]
