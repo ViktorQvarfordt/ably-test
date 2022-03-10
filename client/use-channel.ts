@@ -10,11 +10,11 @@ export function useChannel(
   const [channel] = useState(ablyClient.channels.get(channelName))
   
   // Question: Deltas don't work as intended.
-  channel.setOptions({
-    params: {
-      delta: 'vcdiff'
-    }
-  })
+  // channel.setOptions({
+  //   params: {
+  //     delta: 'vcdiff'
+  //   }
+  // })
   
   const [lastMessageData, setLastMessageData] = useState()
 

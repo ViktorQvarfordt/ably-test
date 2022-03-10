@@ -27,11 +27,20 @@ const usePresence = (channel: Ably.Types.RealtimeChannelPromise): [Ably.Types.Pr
 }
 
 export const View = (): JSX.Element => {
-  const onMessage = useCallback((message) => {
+  const [state, setState] = useState()
+
+  const getNewState = async () => setState(await (await fetch(`/api/get-state`)).json())
+
+  const onMessage = useCallback(async message => {
     console.log('Received channel message', message)
+    getNewState()
+  }, [])
+
+  useEffect(() => {
+    void getNewState()
   }, [])
   
-  const [channel, state] = useChannel(channelName, onMessage)
+  const [channel] = useChannel(channelName, onMessage)
 
   const [presence, setLocalPresence] = usePresence(channel)
 

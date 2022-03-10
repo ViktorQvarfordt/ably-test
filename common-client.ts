@@ -8,9 +8,9 @@ export const getAblyClient = (userId: string) => {
     authUrl: '/api/create-token-request',
     clientId: userId,
     // @ts-ignore
-    plugins: {
-      vcdiff: vcdiffPlugin
-    }
+    // plugins: {
+    //   vcdiff: vcdiffPlugin
+    // }
   })
 }
 
