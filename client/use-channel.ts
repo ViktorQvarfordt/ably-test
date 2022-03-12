@@ -1,42 +1,30 @@
 import type { Types } from "ably"
+import type { Channel } from "pusher-js"
 import { useEffect, useState } from 'react'
 import { messageName } from "../common"
-import { ablyClient } from "../common-client"
+import { ablyClient, pusherClient } from "../common-client"
 
-export function useChannel(
-  channelName: string,
-  callbackOnMessage: (msg: Types.Message) => void
-  ): [channel: Types.RealtimeChannelPromise, lastMessageData: any] {
+export function useAblyChannel(channelName: string, callbackOnMessage: (msg: Types.Message) => void): Types.RealtimeChannelPromise {
   const [channel] = useState(ablyClient.channels.get(channelName))
-  
-  // Question: Deltas don't work as intended.
-  // channel.setOptions({
-  //   params: {
-  //     delta: 'vcdiff'
-  //   }
-  // })
-  
-  const [lastMessageData, setLastMessageData] = useState()
 
   useEffect(() => {
-    console.log(`useChannel ${channelName}`)
-    
-    const handler = (msg: Types.Message) => {
-      setLastMessageData(msg.data)
-      callbackOnMessage(msg)
-    }
+    console.log(`useAblyChannel ${channelName}`)
+    channel.subscribe(messageName, callbackOnMessage)
+    return () => { channel.unsubscribe(messageName, callbackOnMessage) }
+  }, [channelName, channel, callbackOnMessage])
 
-    channel.subscribe(messageName, handler)
+  return channel
+}
 
-    return () => channel.unsubscribe(messageName, handler)
-  }, [callbackOnMessage, channel, channelName])
+
+export function usePusherChannel(channelName: string, callbackOnMessage: (msg: Types.Message) => void): Channel {
+  const [channel] = useState(pusherClient.subscribe(channelName))
 
   useEffect(() => {
-    channel.history({ limit: 1 }).then(async values => {
-      const data = values.items.length === 0 ? undefined : values.items[0].data
-      setLastMessageData(data)
-    })
-  }, [channel])
+    console.log(`usePusherChannel ${channelName}`)
+    channel.bind(messageName, callbackOnMessage)
+    return () => { channel.unbind(messageName, callbackOnMessage) }
+  }, [channelName, channel, callbackOnMessage])
 
-  return [channel, lastMessageData]
+  return channel
 }

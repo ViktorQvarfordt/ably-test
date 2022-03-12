@@ -1,18 +1,6 @@
-import Ably from "ably/promises"
-// @ts-ignore
-import vcdiffPlugin from '@ably/vcdiff-decoder'
-
-export const getAblyClient = (userId: string) => {
-  // Question: How to best do authentication with userId per connection?
-  return new Ably.Realtime.Promise({
-    authUrl: '/api/create-token-request',
-    clientId: userId,
-    // @ts-ignore
-    // plugins: {
-    //   vcdiff: vcdiffPlugin
-    // }
-  })
-}
+import Ably from 'ably/promises'
+import Pusher from 'pusher-js'
+import { pusherApiKey } from './common'
 
 // Mock implementation
 const getUserId = (): string => {
@@ -23,6 +11,21 @@ const getUserId = (): string => {
   return userId
 }
 
+// Question: How to best do authentication with userId per connection?
+const getAblyClient = (userId: string) => new Ably.Realtime.Promise({
+  authUrl: '/api/auth/ably',
+  clientId: userId,
+})
+
+const getPusherClient = (userId: string) => new Pusher(pusherApiKey, {
+  cluster: 'eu',
+  auth: {
+    params: { userId }
+  },
+  authEndpoint: '/api/auth/pusher'
+})
+
 // Should probaly be in a context
-export const ablyClient = getAblyClient(getUserId())
 export const userId = getUserId()
+export const ablyClient = getAblyClient(userId)
+export const pusherClient = getPusherClient(userId)

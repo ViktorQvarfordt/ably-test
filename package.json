@@ -12,6 +12,8 @@
     "@ably/vcdiff-decoder": "^1.0.5",
     "ably": "^1.2.17",
     "next": "12.1.0",
+    "pusher": "^5.0.1",
+    "pusher-js": "^7.0.6",
     "react": "17.0.2",
     "react-dom": "17.0.2"
   },

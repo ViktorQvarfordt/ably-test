@@ -1,2 +1,6 @@
-export const channelName = 'state'
+export const ablyChannelName = 'state'
+export const pusherChannelName = 'private-state'
+export const pusherPresenceChannelName = 'presence-state'
 export const messageName = 'update-state'
+export const pusherAppId = '1359829'
+export const pusherApiKey = '732c2540a91f487c5973'

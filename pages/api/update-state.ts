@@ -1,22 +1,21 @@
 import type { NextApiRequest, NextApiResponse } from 'next'
-import Ably from "ably/promises"
-import { ablyApiKey } from '../../common-api'
-import { channelName, messageName } from '../../common'
+import { ablyChannelName, messageName, pusherChannelName } from '../../common'
+import { ablyClient, pusherClient } from '../../common-api'
 import { setState } from './datastore'
 
-const ablyClient = new Ably.Realtime(ablyApiKey)
-const channel = ablyClient.channels.get(channelName)
 
-let state = null
-
-export default function handler(
-  req: NextApiRequest,
-  res: NextApiResponse
-) {
+export default async function handler(req: NextApiRequest, res: NextApiResponse) {
   setState({
     lastUpdateUserId: req.query.userId ?? null,
     timestamp: new Date().toISOString(),
   })
-  channel.publish(messageName, 'There is a new state!')
+
+  try {
+    await ablyClient.channels.get(ablyChannelName).publish(messageName, null)
+    await pusherClient.trigger(pusherChannelName, messageName, null)
+  } catch (err) {
+    console.log(err)
+  }
+  
   res.end()
 }
