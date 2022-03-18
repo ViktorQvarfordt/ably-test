@@ -77,7 +77,7 @@ export const View = (): JSX.Element => {
     <hr />
 
     <button onClick={() => {
-      yDoc.getMap().set('key', new Date().toISOString())
+      yDoc.getMap().set('lastUpdate', new Date().toISOString())
     }}>
       Mutate CRDT
     </button>

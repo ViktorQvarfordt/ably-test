@@ -2,7 +2,7 @@ import Ably from 'ably/promises'
 
 // Mock implementation
 const getUserId = (): string => {
-  const userId = window.sessionStorage.getItem('userId') ?? window.localStorage.getItem('userId')
+  const userId = new URLSearchParams(window.location.search).get('userId') ?? window.sessionStorage.getItem('userId') ?? window.localStorage.getItem('userId') ?? 'anonymous'
   if (typeof userId !== 'string') {
     throw new Error('Invalid user id')
   }
