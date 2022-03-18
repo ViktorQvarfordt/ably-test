@@ -1,18 +1,19 @@
 import type { NextApiRequest, NextApiResponse } from 'next'
-import { ablyChannelName, messageName, pusherChannelName } from '../../common'
-import { ablyClient, pusherClient } from '../../common-api'
+import { channelName, jsonMessageName } from '../../common'
+import { ablyRestClient } from '../../common-api'
 import { setState } from './datastore'
 
 
 export default async function handler(req: NextApiRequest, res: NextApiResponse) {
-  setState({
+  const newState = {
     lastUpdateUserId: req.query.userId ?? null,
     timestamp: new Date().toISOString(),
-  })
+  }
+  
+  setState(newState)
 
   try {
-    await ablyClient.channels.get(ablyChannelName).publish(messageName, null)
-    await pusherClient.trigger(pusherChannelName, messageName, null)
+    await ablyRestClient.channels.get(channelName).publish(jsonMessageName, newState)
   } catch (err) {
     console.log(err)
   }

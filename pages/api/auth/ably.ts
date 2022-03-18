@@ -1,10 +1,16 @@
 import type { NextApiRequest, NextApiResponse } from 'next'
-import { ablyClient, auth } from "../../../common-api"
+import { channelName } from '../../../common'
+import { ablyRestClient, auth } from "../../../common-api"
 
 export default async function handler (req: NextApiRequest, res: NextApiResponse) {
   const userId = req.query.clientId
   console.log('auth/ably', req.query, req.body)
   auth(userId)
-  const tokenRequestData = await ablyClient.auth.createTokenRequest({ clientId: userId })
+  const tokenRequestData = await ablyRestClient.auth.createTokenRequest({
+    clientId: userId,
+    capability: {
+      [channelName]: ['subscribe', 'publish', 'presence']
+    }
+  })
   res.status(200).json(tokenRequestData)
 }

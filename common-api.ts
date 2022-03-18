@@ -1,5 +1,4 @@
 import Ably from "ably/promises"
-import Pusher from "pusher"
 
 const getEnvVar = (name: string): string => {
   const envVar = process.env[name]
@@ -18,12 +17,5 @@ export function auth (userId: unknown): asserts userId is string {
   }
 }
 
-export const ablyClient = new Ably.Realtime(getEnvVar('ABLY_API_KEY'))
+export const ablyRestClient = new Ably.Rest({ key: getEnvVar('ABLY_API_KEY') })
 
-export const pusherClient = new Pusher({
-  appId: '1359829',
-  key: getEnvVar('PUSHER_API_KEY'),
-  secret: getEnvVar('PUSHER_API_SECRET'),
-  cluster: 'eu',
-  useTLS: true,
-})

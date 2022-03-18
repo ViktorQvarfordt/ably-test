@@ -1,6 +1,4 @@
 import Ably from 'ably/promises'
-import Pusher from 'pusher-js'
-import { pusherApiKey } from './common'
 
 // Mock implementation
 const getUserId = (): string => {
@@ -12,20 +10,13 @@ const getUserId = (): string => {
 }
 
 // Question: How to best do authentication with userId per connection?
-const getAblyClient = (userId: string) => new Ably.Realtime.Promise({
+const getAblyRealtimeClient = (userId: string) => new Ably.Realtime.Promise({
+  echoMessages: false,
+  useBinaryProtocol: true, // Enable in production but not in development
   authUrl: '/api/auth/ably',
   clientId: userId,
 })
 
-const getPusherClient = (userId: string) => new Pusher(pusherApiKey, {
-  cluster: 'eu',
-  auth: {
-    params: { userId }
-  },
-  authEndpoint: '/api/auth/pusher'
-})
-
 // Should probaly be in a context
 export const userId = getUserId()
-export const ablyClient = getAblyClient(userId)
-export const pusherClient = getPusherClient(userId)
+export const ablyRealtimeClient = getAblyRealtimeClient(userId)
