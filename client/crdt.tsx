@@ -19,12 +19,12 @@ const useObserveDeepRerender = (yMap: Y.Map<unknown>) => {
   }, [yMap])
 }
 
-const useAblyProvider = (yDoc: Y.Doc) => {
-  const [origin] = useState<string>(() => `useAblyProvider:${Math.random()}`)
+const useYjsAblyProvider = (yDoc: Y.Doc) => {
+  const [origin] = useState<string>(() => `yjsAblyProvider:${Math.random()}`)
 
   const onAblyMessage = useCallback(async message => {
     if (message.name === crdtMessageName) {
-      console.log('Received Ably CRDT message', message)
+      console.log('Received Yjs update over Ably channel:', message)
       const update = new Uint8Array(message.data)
       Y.applyUpdateV2(yDoc, update, origin)
     }
@@ -33,11 +33,14 @@ const useAblyProvider = (yDoc: Y.Doc) => {
   const ablyChannel = useAblyChannel(channelName, onAblyMessage)
 
   useEffect(() => {
-    yDoc.on('updateV2', (update, updateOrigin) => {
+    const handler = (update: any, updateOrigin: any) => {
       if (updateOrigin !== origin) {
         ablyChannel.publish(crdtMessageName, update)
       }
-    })
+    }
+    
+    yDoc.on('updateV2', handler)
+    return () => yDoc.off('updateV2', handler)
   }, [ablyChannel, origin, yDoc])
 }
 
@@ -47,16 +50,15 @@ export const View = (): JSX.Element => {
 
   useEffect(() => {
     const getInitialState = async () => {
-      const { stateAsUpdate } = await (await fetch(`/api/get-crdt`)).json()
+      const { stateAsUpdate } = await (await fetch(`/api/get-yjs-state-as-update`)).json()
       Y.applyUpdateV2(yDoc, toUint8Array(stateAsUpdate))
     }
     void getInitialState()
   }, [yDoc])
 
-  const ablyChannel = useAblyChannel(channelName)
-  const [ablyPresence, setLocalAblyPresence] = useAblyPresence(ablyChannel)
+  const [ablyPresence, setLocalAblyPresence] = useAblyPresence(useAblyChannel(channelName))
 
-  useAblyProvider(yDoc)
+  useYjsAblyProvider(yDoc)
 
   useEffect(() => {
     setLocalAblyPresence({
