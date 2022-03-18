@@ -1,7 +1,7 @@
 import { useCallback, useEffect, useState } from "react";
 import { useAblyChannel } from "./use-channel";
 import { userId } from "../common-client";
-import { channelName, crdtMessageName } from "../common";
+import { channelName, yjsUpdateMessageName } from "../common";
 import { useAblyPresence } from "./use-presence";
 import * as Y from 'yjs'
 import { toUint8Array } from 'js-base64'
@@ -23,7 +23,7 @@ const useYjsAblyProvider = (yDoc: Y.Doc) => {
   const [origin] = useState<string>(() => `yjsAblyProvider:${Math.random()}`)
 
   const onAblyMessage = useCallback(async message => {
-    if (message.name === crdtMessageName) {
+    if (message.name === yjsUpdateMessageName) {
       console.log('Received Yjs update over Ably channel:', message)
       const update = new Uint8Array(message.data)
       Y.applyUpdateV2(yDoc, update, origin)
@@ -35,7 +35,7 @@ const useYjsAblyProvider = (yDoc: Y.Doc) => {
   useEffect(() => {
     const handler = (update: any, updateOrigin: any) => {
       if (updateOrigin !== origin) {
-        ablyChannel.publish(crdtMessageName, update)
+        ablyChannel.publish(yjsUpdateMessageName, update)
       }
     }
     
