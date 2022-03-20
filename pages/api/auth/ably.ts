@@ -9,7 +9,7 @@ export default async function handler (req: NextApiRequest, res: NextApiResponse
   const tokenRequestData = await ablyRestClient.auth.createTokenRequest({
     clientId: userId,
     capability: {
-      [channelName]: ['subscribe', 'publish', 'presence']
+      [channelName]: ['subscribe', 'publish', 'presence', 'history']
     }
   })
   res.status(200).json(tokenRequestData)

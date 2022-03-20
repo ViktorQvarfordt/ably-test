@@ -1,6 +1,5 @@
 import type { Types } from "ably"
 import { useEffect, useState } from 'react'
-import { jsonMessageName } from "../common"
 import { ablyRealtimeClient } from "../common-client"
 
 export function useAblyChannel(channelName: string, callbackOnMessage?: (msg: Types.Message) => void): Types.RealtimeChannelPromise {

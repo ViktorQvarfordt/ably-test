@@ -1,7 +1,7 @@
 import type { NextApiRequest, NextApiResponse } from 'next'
 import { channelName, jsonMessageName } from '../../common'
 import { ablyRestClient } from '../../common-api'
-import { setState } from './datastore'
+import { setJsonState } from './datastore'
 
 
 export default async function handler(req: NextApiRequest, res: NextApiResponse) {
@@ -10,7 +10,7 @@ export default async function handler(req: NextApiRequest, res: NextApiResponse)
     timestamp: new Date().toISOString(),
   }
   
-  setState(newState)
+  setJsonState(newState)
 
   try {
     await ablyRestClient.channels.get(channelName).publish(jsonMessageName, newState)
