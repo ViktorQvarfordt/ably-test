@@ -25,16 +25,16 @@ const useYjsAblyProvider = (httpEndpoint: string): Y.Doc | undefined => {
 
   useEffect(() => {
     const getInitialState = async () => {
-      const doc = await (await fetch(httpEndpoint)).json()
-      if (doc === null) {
+      const resData = await (await fetch(httpEndpoint)).json()
+      if (resData === null) {
         const msg = `YDoc ${yDocId} does not exist`
         console.log(msg)
         alert(msg)
         return
       }
       window.yDoc = yDoc
-      Y.applyUpdateV2(yDoc, toUint8Array(doc.stateAsUpdate), origin)
-      setLoadedTimestamp(doc.timestamp)
+      Y.applyUpdateV2(yDoc, toUint8Array(resData.stateAsUpdate), origin)
+      setLoadedTimestamp(resData.timestamp)
     }
     void getInitialState()
   }, [httpEndpoint, origin, yDoc])
@@ -70,7 +70,8 @@ const useYjsAblyProvider = (httpEndpoint: string): Y.Doc | undefined => {
 
       whileLoop: while (current) {
         for (const item of current.items) {
-          if (item.timestamp <= loadedTimestamp) {
+          // // TODO: Change this, timestamps are not monotonically increasing
+          if (item.timestamp <= loadedTimestamp) { // TODO: Can there be two updates with the same timestamp? YES!
             console.log(`Successfully applied ${numHistoryItems} updates from history`)
             break whileLoop
           }
@@ -81,7 +82,7 @@ const useYjsAblyProvider = (httpEndpoint: string): Y.Doc | undefined => {
         current = await current.next()
       }
 
-      const historyAgeS = (Date.now() - lastItem.timestamp) / 1000
+      const historyAgeS = (loadedTimestamp - lastItem.timestamp) / 1000
       if (historyAgeS > 10) {
         throw new Error(`Appplied ${numHistoryItems} updates from history going back in time ${historyAgeS} seconds. This indicates that the document is not being properly persisted. The last received persisted document has timestmap ${loadedTimestamp}.`)
       }
@@ -133,7 +134,7 @@ export const View = (): JSX.Element => {
       <p>Ably presence:</p>
       <pre>{JSON.stringify(ablyPresence, null, 2)}</pre>
 
-      <p>CRDT:</p>
+      <p>YDoc data:</p>
       <pre style={{ whiteSpace: 'pre-wrap' }}>{yDoc === undefined ? 'Loading...' : <ReactiveYDoc yDoc={yDoc} />}</pre>
 
       <hr />
@@ -149,13 +150,13 @@ export const View = (): JSX.Element => {
 
         setCounter(counter + 1)
       }}>
-        Mutate CRDT
+        Mutate YDoc
       </button>
 
       <button onClick={() => {
           void fetch(`/api/init-ydoc?yDocId=${yDocId}`)
       }}>
-        Initialize CRDT
+        Initialize YDoc
       </button>
 
     </div>
