@@ -3,12 +3,18 @@ import { channelName } from '../../../common'
 import { ablyRestClient, auth } from "../../../common-api"
 
 export default async function handler (req: NextApiRequest, res: NextApiResponse) {
-  const userId = req.query.clientId
-  console.log('auth/ably', req.query, req.body)
+  console.log('auth/ably', req.body)
+  
+  const userId = req.body.userId
+  const yDocId = req.body.yDocId
+  
   auth(userId)
+  
   const tokenRequestData = await ablyRestClient.auth.createTokenRequest({
     clientId: userId,
     capability: {
+      [`${yDocId}:sub`]: ['subscribe'],
+      [`${yDocId}:pub`]: ['publish'],
       [channelName]: ['subscribe', 'publish', 'presence', 'history']
     }
   })

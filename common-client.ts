@@ -17,15 +17,18 @@ const getYDocId = (): string => {
   return yDocId
 }
 
-// Question: How to best do authentication with userId per connection?
-const getAblyRealtimeClient = (userId: string) => new Ably.Realtime.Promise({
+export const getYDocAblyRealtimeClient = (userId: string, yDocId: string) => new Ably.Realtime.Promise({
   echoMessages: false,
-  useBinaryProtocol: true, // Enable in production but not in development
+  useBinaryProtocol: process.env.NODE_ENV === 'production',
+  authMethod: 'POST',
   authUrl: '/api/auth/ably',
-  clientId: userId,
+  authParams: {
+    userId,
+    yDocId
+  }
 })
 
 // Should probaly be in a context
 export const userId = getUserId()
 export const yDocId = getYDocId()
-export const ablyRealtimeClient = getAblyRealtimeClient(userId)
+export const ablyRealtimeClient = getYDocAblyRealtimeClient(userId, '123')

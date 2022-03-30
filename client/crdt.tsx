@@ -1,10 +1,12 @@
 import { useCallback, useEffect, useState } from "react";
 import { useAblyChannel } from "./use-channel";
-import { ablyRealtimeClient, userId, yDocId } from "../common-client";
+import { ablyRealtimeClient, getYDocAblyRealtimeClient, userId, yDocId } from "../common-client";
 import { channelName, yjsUpdateMessageName } from "../common";
 import { useAblyPresence } from "./use-presence";
 import * as Y from 'yjs'
 import { toUint8Array } from 'js-base64'
+import { Observable } from 'lib0/observable'
+import { Types } from 'ably'
 
 const useObserveDeepRerender = (yMap: Y.Map<unknown>) => {
   const [, _forceRerender] = useState(Date.now())
@@ -17,6 +19,102 @@ const useObserveDeepRerender = (yMap: Y.Map<unknown>) => {
     return () => yMap.unobserveDeep(handler)
   }, [yMap])
 }
+
+// class PresenceProvider extends Observable<''> {}
+
+abstract class AbstractYjsProvider extends Observable<'stateChanged'> {
+  yDoc = new Y.Doc()
+  state: 'loading' | 'loaded' | 'error' = 'loading'
+
+  constructor() {
+    super()
+  }
+
+  init() {
+    this.subscribe(this.handleRemoteUpdate)
+    this.yDoc.on('updateV2', this.handleLocalUpdate)
+    this.getInitialUpdates().then(this.handleInitialUpdates.bind(this))
+  }
+
+  private handleRemoteUpdate(update: Uint8Array): void {
+    Y.applyUpdateV2(this.yDoc, new Uint8Array(update), this)
+  }
+  
+  private handleLocalUpdate(update: Uint8Array, origin?: any): void {
+    if (origin === this) return
+
+    try {
+      this.publish(update)
+    } catch (err) {
+      // TODO: Is it possible to revert the update?
+      this.state = 'error'
+      this.emit('stateChanged', [this.state])
+      alert('Failed to publish ydoc update')
+      throw err
+    }
+  }
+
+  private handleInitialUpdates(updates: Set<Uint8Array>): void {
+    updates.forEach(update => Y.applyUpdateV2(this.yDoc, update, this))
+    this.state = 'loaded'
+    this.emit('stateChanged', [this.state])
+  }
+
+  abstract publish(update: Uint8Array): Promise<void>
+
+  abstract subscribe(handler: (update: Uint8Array) => void): void
+
+  abstract getInitialUpdates(): Promise<Set<Uint8Array>>
+
+  destroy() {
+    this.yDoc.destroy()
+    super.destroy()
+  }
+}
+
+class AblyYjsProvider extends AbstractYjsProvider {
+  private readonly client: Types.RealtimePromise
+  private readonly pubCh: Types.RealtimeChannelPromise
+  private readonly subCh: Types.RealtimeChannelPromise
+
+  constructor(public readonly yDocId: string) {
+    super()
+
+    this.client = getYDocAblyRealtimeClient(userId, yDocId)
+
+    console.log(this.client)
+
+    this.client.connection.on(({ current }) => {
+      console.log(`Online: ${current === 'connected'}`)
+    })
+
+    this.pubCh = this.client.channels.get(`${yDocId}:pub`)
+    this.subCh = this.client.channels.get(`${yDocId}:sub`)
+
+    this.init()
+  }
+
+  async publish(update: Uint8Array): Promise<void> {
+    this.pubCh.publish(update)
+  }
+
+  subscribe(handler: (update: Uint8Array) => void): void {
+    this.subCh.subscribe(msg => {
+      handler(msg.data)
+    })
+  }
+
+  async getInitialUpdates(): Promise<Set<Uint8Array>> {
+    return new Set()
+  }
+
+  destroy(): void {
+    this.client.close()
+    super.destroy()
+  }
+}
+
+const v = new AblyYjsProvider('123')
 
 const useYjsAblyProvider = (httpEndpoint: string): Y.Doc | undefined => {
   const [origin] = useState<string>(() => `yjsAblyProvider:${Math.random()}`)
@@ -157,6 +255,12 @@ export const View = (): JSX.Element => {
           void fetch(`/api/init-ydoc?yDocId=${yDocId}`)
       }}>
         Initialize YDoc
+      </button>
+
+      <button onClick={() => {
+          console.log(ablyRealtimeClient.connection.serial)
+      }}>
+        Log Ably connection serial
       </button>
 
     </div>
