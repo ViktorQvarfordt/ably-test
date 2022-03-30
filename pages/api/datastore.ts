@@ -1,6 +1,7 @@
 import * as Y from 'yjs'
 import fs from 'fs'
 import { fromUint8Array, toUint8Array } from 'js-base64'
+import { string } from 'lib0'
 
 // JSON
 
@@ -70,4 +71,27 @@ export const getDoc = async (yDocId: string): Promise<undefined | { stateAsUpdat
   const yDoc = new Y.Doc()
   yDoc.transact(() => keys.forEach(key => Y.applyUpdateV2(yDoc, versions[key])))
   return { stateAsUpdate: Y.encodeStateAsUpdateV2(yDoc), timestamp: Math.max(...keys.map(key => parseInt(key))) }
+}
+
+// Yjs simple
+
+const filenameSimple = 'data-simple.json'
+
+export const getStoreSimple = (): any => JSON.parse(fs.readFileSync(filenameSimple, 'utf8'))
+
+const setStoreSimple = (store: any): void => fs.writeFileSync(filenameSimple, JSON.stringify(store, null, 2))
+
+export const getUpdatesSimple = (yDocId: string) => getStoreSimple()[yDocId] ?? null
+
+export const saveUpdateSimple = (yDocId: string, update: string) => {
+
+  const store = getStoreSimple()
+  
+  if (store[yDocId] === undefined) {
+    store[yDocId] = []
+  }
+
+  store[yDocId].push(update)
+
+  setStoreSimple(store)
 }

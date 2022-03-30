@@ -31,4 +31,4 @@ export const getYDocAblyRealtimeClient = (userId: string, yDocId: string) => new
 // Should probaly be in a context
 export const userId = getUserId()
 export const yDocId = getYDocId()
-export const ablyRealtimeClient = getYDocAblyRealtimeClient(userId, '123')
+// export const ablyRealtimeClient = getYDocAblyRealtimeClient(userId, '123')
