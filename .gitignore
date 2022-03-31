@@ -39,3 +39,4 @@ yarn-error.log*
 
 # manually added
 data.json
+data-simple.json

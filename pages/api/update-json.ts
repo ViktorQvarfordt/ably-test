@@ -1,6 +1,6 @@
 import type { NextApiRequest, NextApiResponse } from 'next'
 import { channelName, jsonMessageName } from '../../common'
-import { ablyRestClient } from '../../common-api'
+import { ablyRealtimeClient } from '../../common-api'
 import { setJsonState } from './datastore'
 
 
@@ -13,7 +13,7 @@ export default async function handler(req: NextApiRequest, res: NextApiResponse)
   setJsonState(newState)
 
   try {
-    await ablyRestClient.channels.get(channelName).publish(jsonMessageName, newState)
+    await ablyRealtimeClient.channels.get(channelName).publish(jsonMessageName, newState)
   } catch (err) {
     console.log(err)
   }

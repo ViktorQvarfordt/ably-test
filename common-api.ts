@@ -17,5 +17,6 @@ export function auth (userId: unknown): asserts userId is string {
   }
 }
 
-export const ablyRestClient = new Ably.Rest({ key: getEnvVar('ABLY_API_KEY') })
+// export const ablyRestClient = new Ably.Rest({ key: getEnvVar('ABLY_API_KEY') })
+export const ablyRealtimeClient = new Ably.Realtime({ key: getEnvVar('ABLY_API_KEY') })
 
