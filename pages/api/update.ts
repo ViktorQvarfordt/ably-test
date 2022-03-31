@@ -13,7 +13,7 @@ export default async function handler(req: NextApiRequest, res: NextApiResponse)
   saveUpdateSimple(yDocId, update)
 
   try {
-    await ablyRestClient.channels.get(`yjs-updates:${yDocId}`).publish('yjs-update', { update })
+    await ablyRestClient.channels.get(`yjs-updates:${yDocId}`).publish('yjs-update', { ...req.body, serverTimestamp: Date.now() })
   } catch (err) {
     console.log(err)
   }

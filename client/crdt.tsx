@@ -102,6 +102,7 @@ class AblyYjsProvider extends AbstractYjsProvider {
         "content-type": "application/json",
       },
       body: JSON.stringify({
+        clientTimestamp: Date.now(),
         update: fromUint8Array(update),
       }),
     });
@@ -110,6 +111,7 @@ class AblyYjsProvider extends AbstractYjsProvider {
   subscribe(handler: (update: Uint8Array) => void): void {
     this.subCh.subscribe((msg) => {
       if (msg.name === "yjs-update") {
+        console.log(`Received update with full roundtrip time: ${Date.now() - msg.data.clientTimestamp} ms and from server ${Date.now() - msg.data.serverTimestamp} ms`)
         handler(toUint8Array(msg.data.update));
       }
     });
