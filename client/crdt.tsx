@@ -20,8 +20,6 @@ const useObserveDeepRerender = (yMap: Y.Map<unknown>) => {
   }, [yMap]);
 };
 
-// class AbstractPresenceProvider extends Observable<''> {}
-
 abstract class AbstractYjsProvider extends Observable<
   "yDocStatusChanged" | "connectionStatusChanged"
 > {

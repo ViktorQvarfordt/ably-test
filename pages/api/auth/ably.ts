@@ -13,7 +13,7 @@ export default async function handler (req: NextApiRequest, res: NextApiResponse
   const tokenRequestData = await ablyRealtimeClient.auth.createTokenRequest({
     clientId: userId,
     capability: {
-      [`yjs-updates:${yDocId}`]: ['subscribe'],
+      [`yjs-updates:${yDocId}`]: ['subscribe', 'presence'],
       [channelName]: ['subscribe', 'publish', 'presence', 'history']
     }
   })
